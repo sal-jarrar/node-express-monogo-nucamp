@@ -29,6 +29,16 @@ exports.jwtPassport = passport.use(
   })
 )
 
+exports.verifyAdmin = (req, res, next) => {
+  if (req.user && req.user.admin) {
+    next()
+  } else {
+    const err = new Error('You are not authorized to perform this operation!')
+    res.statusCode = 403
+    next(err)
+  }
+}
+
 exports.verifyUser = passport.authenticate('jwt', { session: false })
 exports.local = passport.use(new LocalStrategy(User.authenticate()))
 passport.serializeUser(User.serializeUser())
