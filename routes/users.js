@@ -83,35 +83,20 @@ router.get('/logout', cors.corsWithOptions, (req, res, next) => {
     return next(err)
   }
 })
-exports.facebookPassport = passport.use(
-  new FacebookTokenStrategy(
-    {
-      clientID: config.facebook.clientId,
-      clientSecret: config.facebook.clientSecret,
-    },
-    (accessToken, refreshToken, profile, done) => {
-      User.findOne({ facebookId: profile.id }, (err, user) => {
-        if (err) {
-          return done(err, false)
-        }
-        if (!err && user) {
-          return done(null, user)
-        } else {
-          user = new User({ username: profile.displayName })
-          user.facebookId = profile.id
-          user.firstname = profile.name.givenName
-          user.lastname = profile.name.familyName
-          user.save((err, user) => {
-            if (err) {
-              return done(err, false)
-            } else {
-              return done(null, user)
-            }
-          })
-        }
+router.get(
+  '/facebook/token',
+  passport.authenticate('facebook-token'),
+  (req, res) => {
+    if (req.user) {
+      const token = authenticate.getToken({ _id: req.user._id })
+      res.statusCode = 200
+      res.setHeader('Content-Type', 'application/json')
+      res.json({
+        success: true,
+        token: token,
+        status: 'You are successfully logged in!',
       })
     }
-  )
+  }
 )
-
 module.exports = router
