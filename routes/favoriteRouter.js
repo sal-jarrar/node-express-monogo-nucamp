@@ -23,7 +23,6 @@ favoriteRouter
     Favorite.findOne({ user: req.user._id }).then((favorite) => {
       if (favorite) {
         req.body.forEach((campsite) => {
-          console.log(campsite)
           if (!favorite.campsites.includes(campsite._id)) {
             favorite.campsites.push(campsite)
             favorite.save()
@@ -73,11 +72,12 @@ favoriteRouter
   .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
     Favorite.findOne({ user: req.user._id }).then((favorite) => {
       if (favorite) {
-        if (!favorite.campsites.includes(req.params.campsiteId)) {
+        if (favorite.campsites.includes(req.params.campsiteId)) {
+          res.setHeader('Content-Type', 'text/plain')
+          res.end('That campsite is already in the list of favorites!')
+        } else {
           favorite.campsites.push(req.params.campsiteId)
           res.json(favorite)
-        } else {
-          res.send('That campsite is already in the list of favorites!')
         }
       } else {
         let newFavorite = {
